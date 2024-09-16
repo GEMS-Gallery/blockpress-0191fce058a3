@@ -5,38 +5,17 @@ import { backend } from "declarations/backend";
 let authClient;
 let actor;
 
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const newPostBtn = document.getElementById('newPostBtn');
-const postForm = document.getElementById('postForm');
-const createPostForm = document.getElementById('createPostForm');
-const postsSection = document.getElementById('posts');
-const categoriesSection = document.getElementById('categories');
-const postCategorySelect = document.getElementById('postCategory');
+let loginBtn;
+let logoutBtn;
+let newPostBtn;
+let postForm;
+let createPostForm;
+let postsSection;
+let categoriesSection;
+let postCategorySelect;
 
 let selectedCategory = null;
-
-// Initialize Quill
-const quill = new Quill('#editor', {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-            ['clean']
-        ]
-    }
-});
+let quill;
 
 async function initAuth() {
     authClient = await AuthClient.create();
@@ -45,6 +24,10 @@ async function initAuth() {
 }
 
 async function login() {
+    if (!authClient) {
+        console.error('AuthClient not initialized');
+        return;
+    }
     authClient.login({
         identityProvider: "https://identity.ic0.app/#authorize",
         onSuccess: async () => {
@@ -60,6 +43,10 @@ async function login() {
 }
 
 async function logout() {
+    if (!authClient) {
+        console.error('AuthClient not initialized');
+        return;
+    }
     await authClient.logout();
     actor = null;
     updateUI(false);
@@ -71,30 +58,6 @@ function updateUI(isAuthenticated) {
     logoutBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
     newPostBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
 }
-
-loginBtn.onclick = login;
-logoutBtn.onclick = logout;
-
-newPostBtn.onclick = () => {
-    postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
-};
-
-createPostForm.onsubmit = async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('postTitle').value;
-    const category = postCategorySelect.value;
-    const body = quill.root.innerHTML;
-
-    try {
-        await actor.createPost(title, body, category);
-        createPostForm.reset();
-        quill.setContents([]);
-        postForm.style.display = 'none';
-        await loadPosts();
-    } catch (error) {
-        console.error('Error creating post:', error);
-    }
-};
 
 async function loadCategories() {
     try {
@@ -155,7 +118,65 @@ async function loadPosts() {
     }
 }
 
+function initQuill() {
+    quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'header': 1 }, { 'header': 2 }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                ['clean']
+            ]
+        }
+    });
+}
+
+function initEventListeners() {
+    loginBtn.onclick = login;
+    logoutBtn.onclick = logout;
+    newPostBtn.onclick = () => {
+        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+    };
+    createPostForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('postTitle').value;
+        const category = postCategorySelect.value;
+        const body = quill.root.innerHTML;
+
+        try {
+            await actor.createPost(title, body, category);
+            createPostForm.reset();
+            quill.setContents([]);
+            postForm.style.display = 'none';
+            await loadPosts();
+        } catch (error) {
+            console.error('Error creating post:', error);
+        }
+    };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    loginBtn = document.getElementById('loginBtn');
+    logoutBtn = document.getElementById('logoutBtn');
+    newPostBtn = document.getElementById('newPostBtn');
+    postForm = document.getElementById('postForm');
+    createPostForm = document.getElementById('createPostForm');
+    postsSection = document.getElementById('posts');
+    categoriesSection = document.getElementById('categories');
+    postCategorySelect = document.getElementById('postCategory');
+
+    initQuill();
+    initEventListeners();
     await initAuth();
     await loadCategories();
     await loadPosts();
