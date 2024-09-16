@@ -1,6 +1,7 @@
 import { AuthClient } from "@dfinity/auth-client";
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { backend } from "declarations/backend";
+import { idlFactory } from "declarations/backend/backend.did.js";
+import { canisterId } from "declarations/backend/index.js";
 
 let authClient;
 let actor;
@@ -19,6 +20,10 @@ let createUsernameForm;
 let selectedCategory = null;
 let quill;
 
+const II_URL = process.env.DFX_NETWORK === 'ic' 
+    ? 'https://identity.ic0.app/#authorize' 
+    : `http://localhost:4943?canisterId=${process.env.INTERNET_IDENTITY_CANISTER_ID}#authorize`;
+
 async function initAuth() {
     try {
         authClient = await AuthClient.create();
@@ -34,10 +39,16 @@ async function initAuth() {
 }
 
 async function initActor() {
-    actor = await Actor.createActor(backend, {
-        agent: new HttpAgent({
-            identity: authClient.getIdentity()
-        })
+    const identity = await authClient.getIdentity();
+    const agent = new HttpAgent({ identity });
+    
+    if (process.env.DFX_NETWORK !== 'ic') {
+        agent.fetchRootKey();
+    }
+
+    actor = Actor.createActor(idlFactory, {
+        agent,
+        canisterId: canisterId,
     });
 }
 
@@ -58,7 +69,7 @@ async function login() {
     }
     try {
         await authClient.login({
-            identityProvider: "https://identity.ic0.app/#authorize",
+            identityProvider: II_URL,
             onSuccess: async () => {
                 await initActor();
                 updateUI(true);
@@ -94,7 +105,7 @@ function updateUI(isAuthenticated) {
 
 async function loadCategories() {
     try {
-        const categories = await backend.getCategories();
+        const categories = await actor.getCategories();
         if (categoriesSection) categoriesSection.innerHTML = '';
         if (postCategorySelect) postCategorySelect.innerHTML = '';
         categories.forEach(category => {
@@ -135,8 +146,8 @@ function selectCategory(category) {
 async function loadPosts() {
     try {
         const posts = selectedCategory 
-            ? await backend.getPostsByCategory(selectedCategory)
-            : await backend.getPosts();
+            ? await actor.getPostsByCategory(selectedCategory)
+            : await actor.getPosts();
         if (postsSection) {
             postsSection.innerHTML = '';
             posts.forEach(post => {
