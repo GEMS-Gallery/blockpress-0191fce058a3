@@ -1,6 +1,6 @@
 type Post = 
  record {
-   author: text;
+   author: principal;
    body: text;
    category: text;
    id: nat;
@@ -13,9 +13,11 @@ type Category =
    name: text;
  };
 service : {
-  createPost: (text, text, text, text) -> (nat);
+  createPost: (text, text, text) -> (nat);
   getCategories: () -> (vec Category) query;
+  getOwnPosts: () -> (vec Post) query;
   getPost: (nat) -> (opt Post) query;
   getPosts: () -> (vec Post) query;
   getPostsByCategory: (text) -> (vec Post) query;
+  updatePost: (nat, text, text, text) -> (bool);
 }

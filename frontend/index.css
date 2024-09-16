@@ -33,6 +33,7 @@ button {
     cursor: pointer;
     transition: background-color 0.3s;
     font-family: 'Courier New', Courier, monospace;
+    margin-left: 10px;
 }
 
 button:hover {
@@ -136,4 +137,8 @@ input, select {
 .post .timestamp {
     color: #999;
     font-size: 0.9em;
+}
+
+#authButtons {
+    display: flex;
 }

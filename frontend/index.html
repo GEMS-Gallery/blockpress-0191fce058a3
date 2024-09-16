@@ -11,7 +11,10 @@
 <body>
     <header>
         <h1>Hacker Forum</h1>
-        <button id="newPostBtn">New Post</button>
+        <div id="authButtons">
+            <button id="loginBtn">Login</button>
+            <button id="logoutBtn" style="display: none;">Logout</button>
+        </div>
     </header>
 
     <main>
@@ -23,7 +26,6 @@
             <h2>Create New Post</h2>
             <form id="createPostForm">
                 <input type="text" id="postTitle" placeholder="Title" required>
-                <input type="text" id="postAuthor" placeholder="Author" required>
                 <select id="postCategory" required>
                     <!-- Categories will be dynamically added here -->
                 </select>
