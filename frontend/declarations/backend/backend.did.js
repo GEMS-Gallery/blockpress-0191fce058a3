@@ -5,11 +5,18 @@ export const idlFactory = ({ IDL }) => {
     'body' : IDL.Text,
     'author' : IDL.Text,
     'timestamp' : IDL.Int,
+    'category' : IDL.Text,
   });
   return IDL.Service({
-    'createPost' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
+    'createPost' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'getCategories' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getPost' : IDL.Func([IDL.Nat], [IDL.Opt(Post)], ['query']),
     'getPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'getPostsByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
   });
 };
 export const init = ({ IDL }) => { return []; };

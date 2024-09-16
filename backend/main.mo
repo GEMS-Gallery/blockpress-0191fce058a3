@@ -16,20 +16,25 @@ actor {
     body: Text;
     author: Text;
     timestamp: Int;
+    category: Text;
   };
 
   // Initialize stable variable to store posts
   stable var posts : [Post] = [];
   stable var nextId : Nat = 0;
 
+  // Define categories
+  let categories : [Text] = ["Red Team", "Pen Testing", "Exploit Dev", "CTF", "Social Engineering", "Cryptography"];
+
   // Function to create a new post
-  public func createPost(title: Text, body: Text, author: Text) : async Nat {
+  public func createPost(title: Text, body: Text, author: Text, category: Text) : async Nat {
     let post : Post = {
       id = nextId;
       title = title;
       body = body;
       author = author;
       timestamp = Time.now();
+      category = category;
     };
     posts := Array.append(posts, [post]);
     nextId += 1;
@@ -48,5 +53,15 @@ actor {
   // Function to get a single post by id
   public query func getPost(id: Nat) : async ?Post {
     Array.find(posts, func(post: Post) : Bool { post.id == id })
+  };
+
+  // Function to get all categories
+  public query func getCategories() : async [Text] {
+    categories
+  };
+
+  // Function to get posts by category
+  public query func getPostsByCategory(category: Text) : async [Post] {
+    Array.filter(posts, func(post: Post) : Bool { post.category == category })
   };
 }

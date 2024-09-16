@@ -1,8 +1,9 @@
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     line-height: 1.6;
     color: #333;
-    max-width: 800px;
+    background-color: #ffffff;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -12,29 +13,59 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 5px;
 }
 
 h1 {
     font-size: 2.5em;
     margin: 0;
+    color: #00ff00;
 }
 
 button {
-    background-color: #1a8917;
-    color: white;
+    background-color: #00ff00;
+    color: #1a1a1a;
     border: none;
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 button:hover {
-    background-color: #0f6e0c;
+    background-color: #00cc00;
+}
+
+#categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.category {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.category:hover {
+    background-color: #444;
+}
+
+.category.selected {
+    background-color: #00ff00;
+    color: #1a1a1a;
 }
 
 #postForm {
-    background-color: #f9f9f9;
+    background-color: #f0f0f0;
     padding: 20px;
     margin-bottom: 30px;
     border-radius: 5px;
@@ -45,31 +76,40 @@ form {
     flex-direction: column;
 }
 
-input, #editor {
+input, select, #editor {
     margin-bottom: 15px;
+    font-family: 'Courier New', Courier, monospace;
 }
 
-input {
+input, select {
     padding: 10px;
     font-size: 1em;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
 }
 
 #editor {
     height: 300px;
+    background-color: #fff;
 }
 
 .post {
     margin-bottom: 40px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #ccc;
     padding-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
 }
 
 .post h2 {
     font-size: 1.8em;
     margin-bottom: 5px;
+    color: #1a1a1a;
 }
 
-.post .author {
+.post .author, .post .category {
     font-style: italic;
     color: #666;
 }

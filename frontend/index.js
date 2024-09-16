@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const postForm = document.getElementById('postForm');
     const createPostForm = document.getElementById('createPostForm');
     const postsSection = document.getElementById('posts');
+    const categoriesSection = document.getElementById('categories');
+    const postCategorySelect = document.getElementById('postCategory');
+
+    let selectedCategory = null;
 
     // Initialize Quill
     const quill = new Quill('#editor', {
@@ -36,10 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         const title = document.getElementById('postTitle').value;
         const author = document.getElementById('postAuthor').value;
+        const category = postCategorySelect.value;
         const body = quill.root.innerHTML;
 
         try {
-            await backend.createPost(title, body, author);
+            await backend.createPost(title, body, author, category);
             createPostForm.reset();
             quill.setContents([]);
             postForm.style.display = 'none';
@@ -49,9 +54,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    async function loadCategories() {
+        try {
+            const categories = await backend.getCategories();
+            categoriesSection.innerHTML = '';
+            postCategorySelect.innerHTML = '';
+            categories.forEach(category => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                categoryElement.textContent = category;
+                categoryElement.addEventListener('click', () => selectCategory(category));
+                categoriesSection.appendChild(categoryElement);
+
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                postCategorySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+
+    function selectCategory(category) {
+        selectedCategory = category;
+        document.querySelectorAll('.category').forEach(el => {
+            el.classList.remove('selected');
+            if (el.textContent === category) {
+                el.classList.add('selected');
+            }
+        });
+        loadPosts();
+    }
+
     async function loadPosts() {
         try {
-            const posts = await backend.getPosts();
+            const posts = selectedCategory 
+                ? await backend.getPostsByCategory(selectedCategory)
+                : await backend.getPosts();
             postsSection.innerHTML = '';
             posts.forEach(post => {
                 const postElement = document.createElement('article');
@@ -59,6 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 postElement.innerHTML = `
                     <h2>${post.title}</h2>
                     <p class="author">By ${post.author}</p>
+                    <p class="category">${post.category}</p>
                     <div class="content">${post.body}</div>
                     <p class="timestamp">${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</p>
                 `;
@@ -69,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Load posts on page load
+    // Load categories and posts on page load
+    await loadCategories();
     await loadPosts();
 });

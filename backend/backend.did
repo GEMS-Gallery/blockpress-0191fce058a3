@@ -2,12 +2,15 @@ type Post =
  record {
    author: text;
    body: text;
+   category: text;
    id: nat;
    timestamp: int;
    title: text;
  };
 service : {
-  createPost: (text, text, text) -> (nat);
+  createPost: (text, text, text, text) -> (nat);
+  getCategories: () -> (vec text) query;
   getPost: (nat) -> (opt Post) query;
   getPosts: () -> (vec Post) query;
+  getPostsByCategory: (text) -> (vec Post) query;
 }
