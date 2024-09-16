@@ -7,9 +7,14 @@ type Post =
    timestamp: int;
    title: text;
  };
+type Category = 
+ record {
+   description: text;
+   name: text;
+ };
 service : {
   createPost: (text, text, text, text) -> (nat);
-  getCategories: () -> (vec text) query;
+  getCategories: () -> (vec Category) query;
   getPost: (nat) -> (opt Post) query;
   getPosts: () -> (vec Post) query;
   getPostsByCategory: (text) -> (vec Post) query;

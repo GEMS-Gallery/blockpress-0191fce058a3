@@ -40,19 +40,30 @@ button:hover {
 }
 
 #categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .category {
     background-color: #333;
     color: #fff;
-    padding: 10px 20px;
+    padding: 15px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+}
+
+.category h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #00ff00;
+}
+
+.category p {
+    font-size: 0.9em;
+    margin: 0;
 }
 
 .category:hover {
@@ -61,6 +72,10 @@ button:hover {
 
 .category.selected {
     background-color: #00ff00;
+    color: #1a1a1a;
+}
+
+.category.selected h3 {
     color: #1a1a1a;
 }
 

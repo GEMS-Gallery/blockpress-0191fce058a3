@@ -2,6 +2,7 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
+export interface Category { 'name' : string, 'description' : string }
 export interface Post {
   'id' : bigint,
   'title' : string,
@@ -12,7 +13,7 @@ export interface Post {
 }
 export interface _SERVICE {
   'createPost' : ActorMethod<[string, string, string, string], bigint>,
-  'getCategories' : ActorMethod<[], Array<string>>,
+  'getCategories' : ActorMethod<[], Array<Category>>,
   'getPost' : ActorMethod<[bigint], [] | [Post]>,
   'getPosts' : ActorMethod<[], Array<Post>>,
   'getPostsByCategory' : ActorMethod<[string], Array<Post>>,

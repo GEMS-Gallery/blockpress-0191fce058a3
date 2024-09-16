@@ -62,13 +62,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             categories.forEach(category => {
                 const categoryElement = document.createElement('div');
                 categoryElement.className = 'category';
-                categoryElement.textContent = category;
-                categoryElement.addEventListener('click', () => selectCategory(category));
+                categoryElement.innerHTML = `
+                    <h3>${category.name}</h3>
+                    <p>${category.description}</p>
+                `;
+                categoryElement.addEventListener('click', () => selectCategory(category.name));
                 categoriesSection.appendChild(categoryElement);
 
                 const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
+                option.value = category.name;
+                option.textContent = category.name;
                 postCategorySelect.appendChild(option);
             });
         } catch (error) {
@@ -80,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedCategory = category;
         document.querySelectorAll('.category').forEach(el => {
             el.classList.remove('selected');
-            if (el.textContent === category) {
+            if (el.querySelector('h3').textContent === category) {
                 el.classList.add('selected');
             }
         });

@@ -19,12 +19,25 @@ actor {
     category: Text;
   };
 
+  // Define the Category type
+  type Category = {
+    name: Text;
+    description: Text;
+  };
+
   // Initialize stable variable to store posts
   stable var posts : [Post] = [];
   stable var nextId : Nat = 0;
 
-  // Define categories
-  let categories : [Text] = ["Red Team", "Pen Testing", "Exploit Dev", "CTF", "Social Engineering", "Cryptography"];
+  // Define categories with descriptions
+  let categories : [Category] = [
+    { name = "Red Team"; description = "Offensive security tactics and strategies" },
+    { name = "Pen Testing"; description = "Penetration testing methodologies and tools" },
+    { name = "Exploit Dev"; description = "Vulnerability research and exploit development" },
+    { name = "Cryptography"; description = "Encryption, decryption, and cipher discussions" },
+    { name = "Social Engineering"; description = "Human-focused attack techniques" },
+    { name = "CTF"; description = "Capture The Flag challenges and writeups" }
+  ];
 
   // Function to create a new post
   public func createPost(title: Text, body: Text, author: Text, category: Text) : async Nat {
@@ -56,7 +69,7 @@ actor {
   };
 
   // Function to get all categories
-  public query func getCategories() : async [Text] {
+  public query func getCategories() : async [Category] {
     categories
   };
 

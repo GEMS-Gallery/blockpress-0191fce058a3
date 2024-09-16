@@ -1,4 +1,5 @@
 export const idlFactory = ({ IDL }) => {
+  const Category = IDL.Record({ 'name' : IDL.Text, 'description' : IDL.Text });
   const Post = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -13,7 +14,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
-    'getCategories' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
     'getPost' : IDL.Func([IDL.Nat], [IDL.Opt(Post)], ['query']),
     'getPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
     'getPostsByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
