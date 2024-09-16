@@ -45,10 +45,17 @@ form {
     flex-direction: column;
 }
 
-input, textarea {
+input, #editor {
     margin-bottom: 15px;
+}
+
+input {
     padding: 10px;
     font-size: 1em;
+}
+
+#editor {
+    height: 300px;
 }
 
 .post {

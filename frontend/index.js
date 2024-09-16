@@ -6,17 +6,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const createPostForm = document.getElementById('createPostForm');
     const postsSection = document.getElementById('posts');
 
-    // Initialize TinyMCE
-    tinymce.init({
-        selector: '#postBody',
-        height: 300,
-        menubar: false,
-        plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+    // Initialize Quill
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'header': 1 }, { 'header': 2 }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                ['clean']
+            ]
+        }
     });
 
     newPostBtn.addEventListener('click', () => {
@@ -27,12 +36,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         const title = document.getElementById('postTitle').value;
         const author = document.getElementById('postAuthor').value;
-        const body = tinymce.get('postBody').getContent();
+        const body = quill.root.innerHTML;
 
         try {
             await backend.createPost(title, body, author);
             createPostForm.reset();
-            tinymce.get('postBody').setContent('');
+            quill.setContents([]);
             postForm.style.display = 'none';
             await loadPosts();
         } catch (error) {
