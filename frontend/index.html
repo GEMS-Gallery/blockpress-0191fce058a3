@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Blog</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+    <header>
+        <h1>Crypto Blog</h1>
+        <button id="newPostBtn">New Post</button>
+    </header>
+
+    <main>
+        <section id="postForm" style="display: none;">
+            <h2>Create New Post</h2>
+            <form id="createPostForm">
+                <input type="text" id="postTitle" placeholder="Title" required>
+                <input type="text" id="postAuthor" placeholder="Author" required>
+                <textarea id="postBody" placeholder="Write your post here..."></textarea>
+                <button type="submit">Publish</button>
+            </form>
+        </section>
+
+        <section id="posts">
+            <!-- Posts will be dynamically added here -->
+        </section>
+    </main>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
