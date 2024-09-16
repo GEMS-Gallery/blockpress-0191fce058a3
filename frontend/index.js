@@ -18,9 +18,13 @@ let selectedCategory = null;
 let quill;
 
 async function initAuth() {
-    authClient = await AuthClient.create();
-    const isAuthenticated = await authClient.isAuthenticated();
-    updateUI(isAuthenticated);
+    try {
+        authClient = await AuthClient.create();
+        const isAuthenticated = await authClient.isAuthenticated();
+        updateUI(isAuthenticated);
+    } catch (error) {
+        console.error('Error initializing AuthClient:', error);
+    }
 }
 
 async function login() {
@@ -28,18 +32,22 @@ async function login() {
         console.error('AuthClient not initialized');
         return;
     }
-    authClient.login({
-        identityProvider: "https://identity.ic0.app/#authorize",
-        onSuccess: async () => {
-            actor = await Actor.createActor(backend, {
-                agent: new HttpAgent({
-                    identity: authClient.getIdentity()
-                })
-            });
-            updateUI(true);
-            loadPosts();
-        }
-    });
+    try {
+        await authClient.login({
+            identityProvider: "https://identity.ic0.app/#authorize",
+            onSuccess: async () => {
+                actor = await Actor.createActor(backend, {
+                    agent: new HttpAgent({
+                        identity: authClient.getIdentity()
+                    })
+                });
+                updateUI(true);
+                loadPosts();
+            }
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+    }
 }
 
 async function logout() {
@@ -47,37 +55,45 @@ async function logout() {
         console.error('AuthClient not initialized');
         return;
     }
-    await authClient.logout();
-    actor = null;
-    updateUI(false);
-    loadPosts();
+    try {
+        await authClient.logout();
+        actor = null;
+        updateUI(false);
+        loadPosts();
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
 }
 
 function updateUI(isAuthenticated) {
-    loginBtn.style.display = isAuthenticated ? 'none' : 'inline-block';
-    logoutBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
-    newPostBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
+    if (loginBtn) loginBtn.style.display = isAuthenticated ? 'none' : 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
+    if (newPostBtn) newPostBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
 }
 
 async function loadCategories() {
     try {
         const categories = await backend.getCategories();
-        categoriesSection.innerHTML = '';
-        postCategorySelect.innerHTML = '';
+        if (categoriesSection) categoriesSection.innerHTML = '';
+        if (postCategorySelect) postCategorySelect.innerHTML = '';
         categories.forEach(category => {
-            const categoryElement = document.createElement('div');
-            categoryElement.className = 'category';
-            categoryElement.innerHTML = `
-                <h3>${category.name}</h3>
-                <p>${category.description}</p>
-            `;
-            categoryElement.onclick = () => selectCategory(category.name);
-            categoriesSection.appendChild(categoryElement);
+            if (categoriesSection) {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                categoryElement.innerHTML = `
+                    <h3>${category.name}</h3>
+                    <p>${category.description}</p>
+                `;
+                categoryElement.onclick = () => selectCategory(category.name);
+                categoriesSection.appendChild(categoryElement);
+            }
 
-            const option = document.createElement('option');
-            option.value = category.name;
-            option.textContent = category.name;
-            postCategorySelect.appendChild(option);
+            if (postCategorySelect) {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                postCategorySelect.appendChild(option);
+            }
         });
     } catch (error) {
         console.error('Error loading categories:', error);
@@ -100,69 +116,78 @@ async function loadPosts() {
         const posts = selectedCategory 
             ? await backend.getPostsByCategory(selectedCategory)
             : await backend.getPosts();
-        postsSection.innerHTML = '';
-        posts.forEach(post => {
-            const postElement = document.createElement('article');
-            postElement.className = 'post';
-            postElement.innerHTML = `
-                <h2>${post.title}</h2>
-                <p class="author">By ${post.author.toText()}</p>
-                <p class="category">${post.category}</p>
-                <div class="content">${post.body}</div>
-                <p class="timestamp">${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</p>
-            `;
-            postsSection.appendChild(postElement);
-        });
+        if (postsSection) {
+            postsSection.innerHTML = '';
+            posts.forEach(post => {
+                const postElement = document.createElement('article');
+                postElement.className = 'post';
+                postElement.innerHTML = `
+                    <h2>${post.title}</h2>
+                    <p class="author">By ${post.author.toText()}</p>
+                    <p class="category">${post.category}</p>
+                    <div class="content">${post.body}</div>
+                    <p class="timestamp">${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</p>
+                `;
+                postsSection.appendChild(postElement);
+            });
+        }
     } catch (error) {
         console.error('Error loading posts:', error);
     }
 }
 
 function initQuill() {
-    quill = new Quill('#editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ 'header': 1 }, { 'header': 2 }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                [{ 'direction': 'rtl' }],
-                [{ 'size': ['small', false, 'large', 'huge'] }],
-                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                [{ 'color': [] }, { 'background': [] }],
-                [{ 'font': [] }],
-                [{ 'align': [] }],
-                ['clean']
-            ]
-        }
-    });
+    const editorElement = document.getElementById('editor');
+    if (editorElement) {
+        quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'font': [] }],
+                    [{ 'align': [] }],
+                    ['clean']
+                ]
+            }
+        });
+    }
 }
 
 function initEventListeners() {
-    loginBtn.onclick = login;
-    logoutBtn.onclick = logout;
-    newPostBtn.onclick = () => {
-        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+    if (loginBtn) loginBtn.onclick = login;
+    if (logoutBtn) logoutBtn.onclick = logout;
+    if (newPostBtn) newPostBtn.onclick = () => {
+        if (postForm) postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
     };
-    createPostForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('postTitle').value;
-        const category = postCategorySelect.value;
-        const body = quill.root.innerHTML;
+    if (createPostForm) {
+        createPostForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('postTitle')?.value;
+            const category = postCategorySelect?.value;
+            const body = quill?.root.innerHTML;
 
-        try {
-            await actor.createPost(title, body, category);
-            createPostForm.reset();
-            quill.setContents([]);
-            postForm.style.display = 'none';
-            await loadPosts();
-        } catch (error) {
-            console.error('Error creating post:', error);
-        }
-    };
+            if (title && category && body && actor) {
+                try {
+                    await actor.createPost(title, body, category);
+                    createPostForm.reset();
+                    if (quill) quill.setContents([]);
+                    if (postForm) postForm.style.display = 'none';
+                    await loadPosts();
+                } catch (error) {
+                    console.error('Error creating post:', error);
+                }
+            }
+        };
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
