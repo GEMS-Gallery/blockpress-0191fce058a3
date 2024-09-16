@@ -13,6 +13,8 @@ let createPostForm;
 let postsSection;
 let categoriesSection;
 let postCategorySelect;
+let usernameForm;
+let createUsernameForm;
 
 let selectedCategory = null;
 let quill;
@@ -22,8 +24,30 @@ async function initAuth() {
         authClient = await AuthClient.create();
         const isAuthenticated = await authClient.isAuthenticated();
         updateUI(isAuthenticated);
+        if (isAuthenticated) {
+            await initActor();
+            await checkUsername();
+        }
     } catch (error) {
         console.error('Error initializing AuthClient:', error);
+    }
+}
+
+async function initActor() {
+    actor = await Actor.createActor(backend, {
+        agent: new HttpAgent({
+            identity: authClient.getIdentity()
+        })
+    });
+}
+
+async function checkUsername() {
+    const username = await actor.getUsername();
+    if (username[0] === null) {
+        usernameForm.style.display = 'block';
+    } else {
+        usernameForm.style.display = 'none';
+        newPostBtn.style.display = 'inline-block';
     }
 }
 
@@ -36,12 +60,9 @@ async function login() {
         await authClient.login({
             identityProvider: "https://identity.ic0.app/#authorize",
             onSuccess: async () => {
-                actor = await Actor.createActor(backend, {
-                    agent: new HttpAgent({
-                        identity: authClient.getIdentity()
-                    })
-                });
+                await initActor();
                 updateUI(true);
+                await checkUsername();
                 loadPosts();
             }
         });
@@ -123,7 +144,7 @@ async function loadPosts() {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <h2>${post.title}</h2>
-                    <p class="author">By ${post.author.toText()}</p>
+                    <p class="author">By ${post.author}</p>
                     <p class="category">${post.category}</p>
                     <div class="content">${post.body}</div>
                     <p class="timestamp">${new Date(Number(post.timestamp) / 1000000).toLocaleString()}</p>
@@ -188,6 +209,25 @@ function initEventListeners() {
             }
         };
     }
+    if (createUsernameForm) {
+        createUsernameForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('usernameInput')?.value;
+            if (username && actor) {
+                try {
+                    const result = await actor.createUser(username);
+                    if (result) {
+                        usernameForm.style.display = 'none';
+                        newPostBtn.style.display = 'inline-block';
+                    } else {
+                        alert('Username creation failed. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error creating username:', error);
+                }
+            }
+        };
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -199,6 +239,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     postsSection = document.getElementById('posts');
     categoriesSection = document.getElementById('categories');
     postCategorySelect = document.getElementById('postCategory');
+    usernameForm = document.getElementById('usernameForm');
+    createUsernameForm = document.getElementById('createUsernameForm');
 
     initQuill();
     initEventListeners();

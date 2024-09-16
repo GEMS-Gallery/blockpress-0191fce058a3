@@ -4,17 +4,23 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'title' : IDL.Text,
     'body' : IDL.Text,
-    'author' : IDL.Principal,
+    'author' : IDL.Text,
     'timestamp' : IDL.Int,
     'category' : IDL.Text,
   });
   return IDL.Service({
-    'createPost' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
+    'createPost' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Opt(IDL.Nat)],
+        [],
+      ),
+    'createUser' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
-    'getOwnPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'getOwnPosts' : IDL.Func([], [IDL.Vec(Post)], []),
     'getPost' : IDL.Func([IDL.Nat], [IDL.Opt(Post)], ['query']),
     'getPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
     'getPostsByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Post)], ['query']),
+    'getUsername' : IDL.Func([], [IDL.Opt(IDL.Text)], []),
     'updatePost' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Bool],

@@ -1,19 +1,22 @@
 import Bool "mo:base/Bool";
+import Hash "mo:base/Hash";
 import Int "mo:base/Int";
 import Nat "mo:base/Nat";
-import Text "mo:base/Text";
 
 import Array "mo:base/Array";
 import Time "mo:base/Time";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
+import Text "mo:base/Text";
 
 actor {
   type Post = {
     id: Nat;
     title: Text;
     body: Text;
-    author: Principal;
+    author: Text;
     timestamp: Int;
     category: Text;
   };
@@ -23,8 +26,16 @@ actor {
     description: Text;
   };
 
+  type User = {
+    principal: Principal;
+    username: Text;
+  };
+
   stable var posts : [Post] = [];
   stable var nextId : Nat = 0;
+  stable var userEntries : [(Principal, User)] = [];
+
+  let users = HashMap.fromIter<Principal, User>(userEntries.vals(), 10, Principal.equal, Principal.hash);
 
   let categories : [Category] = [
     { name = "Red Team"; description = "Offensive security tactics and strategies" },
@@ -35,18 +46,42 @@ actor {
     { name = "CTF"; description = "Capture The Flag challenges and writeups" }
   ];
 
-  public shared(msg) func createPost(title: Text, body: Text, category: Text) : async Nat {
-    let post : Post = {
-      id = nextId;
-      title = title;
-      body = body;
-      author = msg.caller;
-      timestamp = Time.now();
-      category = category;
+  public shared(msg) func createUser(username: Text) : async Bool {
+    if (Option.isSome(users.get(msg.caller))) {
+      return false; // User already exists
     };
-    posts := Array.append(posts, [post]);
-    nextId += 1;
-    nextId - 1
+    let newUser : User = {
+      principal = msg.caller;
+      username = username;
+    };
+    users.put(msg.caller, newUser);
+    true
+  };
+
+  public shared(msg) func getUsername() : async ?Text {
+    switch (users.get(msg.caller)) {
+      case (null) { null };
+      case (?user) { ?user.username };
+    }
+  };
+
+  public shared(msg) func createPost(title: Text, body: Text, category: Text) : async ?Nat {
+    switch (users.get(msg.caller)) {
+      case (null) { null };
+      case (?user) {
+        let post : Post = {
+          id = nextId;
+          title = title;
+          body = body;
+          author = user.username;
+          timestamp = Time.now();
+          category = category;
+        };
+        posts := Array.append(posts, [post]);
+        nextId += 1;
+        ?(nextId - 1)
+      };
+    }
   };
 
   public query func getPosts() : async [Post] {
@@ -69,25 +104,43 @@ actor {
     Array.filter(posts, func(post: Post) : Bool { post.category == category })
   };
 
-  public query({caller}) func getOwnPosts() : async [Post] {
-    Array.filter(posts, func(post: Post) : Bool { post.author == caller })
+  public shared(msg) func getOwnPosts() : async [Post] {
+    switch (users.get(msg.caller)) {
+      case (null) { [] };
+      case (?user) {
+        Array.filter(posts, func(post: Post) : Bool { post.author == user.username })
+      };
+    }
   };
 
-  public shared({caller}) func updatePost(id: Nat, title: Text, body: Text, category: Text) : async Bool {
-    posts := Array.map<Post, Post>(posts, func (post: Post) : Post {
-      if (post.id == id and post.author == caller) {
-        {
-          id = id;
-          title = title;
-          body = body;
-          author = caller;
-          timestamp = Time.now();
-          category = category;
-        }
-      } else {
-        post
-      }
-    });
-    true
+  public shared(msg) func updatePost(id: Nat, title: Text, body: Text, category: Text) : async Bool {
+    switch (users.get(msg.caller)) {
+      case (null) { false };
+      case (?user) {
+        posts := Array.map<Post, Post>(posts, func (post: Post) : Post {
+          if (post.id == id and post.author == user.username) {
+            {
+              id = id;
+              title = title;
+              body = body;
+              author = user.username;
+              timestamp = Time.now();
+              category = category;
+            }
+          } else {
+            post
+          }
+        });
+        true
+      };
+    }
+  };
+
+  system func preupgrade() {
+    userEntries := Iter.toArray(users.entries());
+  };
+
+  system func postupgrade() {
+    userEntries := [];
   };
 }

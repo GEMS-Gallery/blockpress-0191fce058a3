@@ -80,7 +80,7 @@ button:hover {
     color: #1a1a1a;
 }
 
-#postForm {
+#postForm, #usernameForm {
     background-color: #f0f0f0;
     padding: 20px;
     margin-bottom: 30px;
